@@ -32,3 +32,7 @@ npm run build
 #start the application
 npm run start
 ```
+
+## Demo Application
+
+<img src="assets/demo_whatsapp_chatgpt.png">

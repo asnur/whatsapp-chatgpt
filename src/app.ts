@@ -33,6 +33,8 @@ client.on("qr", (qr) => {
   qrcode.generate(qr, {
     small: true,
   });
+
+  console.log("Scan the QR code above to authenticate the client !!!");
 });
 
 /**
