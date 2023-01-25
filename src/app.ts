@@ -1,36 +1,50 @@
 import { Client, LocalAuth } from "whatsapp-web.js";
 import { Configuration, OpenAIApi } from "openai";
 import qrcode from "qrcode-terminal";
-import axios from "axios";
 
+/**
+ * @description Create a new client instance for the WhatsApp Web API
+ */
 const client = new Client({
   puppeteer: {
     args: ["--no-sandbox"],
   },
   authStrategy: new LocalAuth({
-    clientId: "BEM-STTNF",
+    clientId: "YOUR_CLIENT_ID",
     dataPath: __dirname + "/session",
   }),
 });
 
-const { API_KEY } = require("dotenv").config().parsed;
+/**
+ * @description Create a new client instance for the OpenAI API
+ */
+const { API_KEY_OPENAI } = require("dotenv").config().parsed;
 
 const configuration = new Configuration({
-  apiKey: API_KEY,
+  apiKey: API_KEY_OPENAI,
 });
 
 const openai = new OpenAIApi(configuration);
 
+/**
+ * @description Generate a QR code to authenticate the client
+ */
 client.on("qr", (qr) => {
   qrcode.generate(qr, {
     small: true,
   });
 });
 
+/**
+ * @description Log the client is ready
+ */
 client.on("ready", () => {
   console.log("Client is ready!");
 });
 
+/**
+ * @description Log the client in listening messages
+ */
 client.on("message", async (msg) => {
   try {
     const completion = await openai.createCompletion({
@@ -49,12 +63,21 @@ client.on("message", async (msg) => {
   }
 });
 
+/**
+ * @description Log the client is logged out
+ */
 client.on("disconnected", (reason) => {
   console.log("Client was logged out", reason);
 });
 
+/**
+ * @description Log the client is authenticated
+ */
 client.on("authenticated", (session) => {
   console.log("Client was authenticated");
 });
 
+/**
+ * @description Initialize the client WhatsApp Web API
+ */
 client.initialize();
