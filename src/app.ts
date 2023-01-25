@@ -1,4 +1,5 @@
 import { Client, LocalAuth } from "whatsapp-web.js";
+import { Configuration, OpenAIApi } from "openai";
 import qrcode from "qrcode-terminal";
 import axios from "axios";
 
@@ -14,6 +15,12 @@ const client = new Client({
 
 const { API_KEY } = require("dotenv").config().parsed;
 
+const configuration = new Configuration({
+  apiKey: API_KEY,
+});
+
+const openai = new OpenAIApi(configuration);
+
 client.on("qr", (qr) => {
   qrcode.generate(qr, {
     small: true,
@@ -24,25 +31,22 @@ client.on("ready", () => {
   console.log("Client is ready!");
 });
 
-client.on("message", (msg) => {
-  axios
-    .post(
-      "https://api.openai.com/v1/engines/davinci-codex/completions",
-      {
-        prompt: msg.body,
-        temperature: 1,
-        max_tokens: 100,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
-      }
-    )
-    .then((res) => {
-      msg.reply(res.data.choices[0].text);
+client.on("message", async (msg) => {
+  try {
+    const completion = await openai.createCompletion({
+      model: "text-davinci-003",
+      prompt: msg.body,
+      max_tokens: 1000,
+      temperature: 0.9,
     });
+
+    console.log(msg.body);
+    console.log(completion.data.choices[0].text);
+    msg.reply(String(completion.data.choices[0].text));
+  } catch (err) {
+    console.log(err);
+    msg.reply("Sorry, Request failed.");
+  }
 });
 
 client.on("disconnected", (reason) => {
